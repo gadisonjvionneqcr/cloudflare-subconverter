@@ -1,0 +1,203 @@
+port: 7890
+socks-port: 7891
+mixed-port: 7892
+allow-lan: true
+bind-address: '*'
+mode: rule
+log-level: warning
+ipv6: false
+external-controller: 0.0.0.0:9090
+unified-delay: true
+tcp-concurrent: true
+global-client-fingerprint: chrome
+find-process-mode: strict
+ntp:
+  enable: true
+  write-to-system: false
+  server: ntp.aliyun.com
+  port: 123
+  interval: 30
+sniffer:
+  enable: true
+  parse-pure-ip: true
+  force-dns-mapping: false
+  override-destination: true
+  sniff:
+    TLS:
+      ports:
+      - 443
+      - 8443
+    HTTP:
+      ports:
+      - 80
+      - 8080-8880
+    QUIC:
+      ports:
+      - 443
+dns:
+  enable: true
+  listen: :1053
+  ipv6: false
+  enhanced-mode: fake-ip
+  fake-ip-range: 198.18.0.1/16
+  proxy-server-nameserver:
+  - https://223.5.5.5/dns-query
+  nameserver:
+  - https://223.5.5.5/dns-query
+  - https://doh.pub/dns-query
+  fallback:
+  - https://1.1.1.1/dns-query
+  - https://8.8.8.8/dns-query
+  fallback-filter:
+    geoip: true
+    geoip-code: CN
+    ipmask:
+    - 240.0.0.0/4
+  fake-ip-filter:
+  - tplinkwifi.net
+  - miwifi.com
+  - router.asus.com
+  - +.lan
+  - localhost.ptlogin2.qq.com
+  - geoip:private
+  - geoip:cn
+tun:
+  enable: true
+  stack: mixed
+  auto-route: true
+  auto-detect-interface: true
+  strict-route: true
+  dns-hijack:
+  - any:53
+  device: SakuraiTunnel
+  mtu: 1500
+  endpoint-independent-nat: true
+proxies:  # 这里的内容会被替换
+  - name: "example"
+    type: "ss"
+    server: "example.com"
+    port: 443
+    cipher: "aes-256-gcm"
+    password: "password"
+    udp: true
+proxy-groups:
+  - name: ✅节点选择
+    type: select
+    proxies:
+      - ♻️自动切换
+      - DIRECT
+  - name: 🤖AI
+    type: select
+    proxies:
+  - name: 🎧Spotify
+    type: select
+    proxies:
+      - ♻️自动切换
+  - name: Ⓜ️微软服务
+    type: select
+    proxies:
+      - 🔗直连
+      - ✅节点选择
+  - name: 🍎苹果
+    type: select
+    proxies:
+      - 🔗直连
+      - ✅节点选择
+  - name: 🅰️Adobe
+    type: select
+    proxies:
+      - REJECT
+      - DIRECT
+      - ✅节点选择 
+  - name: ♻️自动切换
+    type: url-test
+    url: http://cp.cloudflare.com/generate_204
+    interval: 300
+    tolerance: 50
+    proxies:
+  - name: 🔗直连
+    type: select
+    proxies:
+      - DIRECT
+      - ✅节点选择
+  - name: ⛔拦截
+    type: select
+    proxies:
+      - REJECT
+      - DIRECT
+      - ✅节点选择
+  - name: 中转
+    type: select
+    proxies:
+      - ✅节点选择
+      - 🔗直连
+geox-url:
+  geosite: https://testingcf.jsdelivr.net/gh/MetaCubeX/meta-rules-dat@release/geosite.dat
+  geoip: https://testingcf.jsdelivr.net/gh/MetaCubeX/meta-rules-dat@release/geoip.dat
+  mmdb: https://testingcf.jsdelivr.net/gh/MetaCubeX/meta-rules-dat@release/country.mmdb
+geodata-mode: true
+rules:
+  # 1. 本地与局域网直连
+  - DOMAIN-SUFFIX,local,🔗直连
+  - DOMAIN-SUFFIX,localhost,🔗直连
+  - IP-CIDR,192.168.0.0/16,🔗直连
+  - IP-CIDR,10.0.0.0/8,🔗直连
+  - IP-CIDR,127.0.0.0/8,🔗直连
+  - IP-CIDR,100.64.0.0/10,🔗直连
+
+  # 2. 广告拦截
+  - GEOSITE,category-ads-all,⛔拦截
+
+  # 3. 音乐与滚动歌词
+  - GEOSITE,spotify,🎧Spotify
+  - DOMAIN-KEYWORD,lyricify,🎧Spotify
+  - DOMAIN-SUFFIX,lyricify.com,🎧Spotify
+  - DOMAIN-SUFFIX,lyricify.top,🎧Spotify
+
+  # 4. 游戏特化
+  - PROCESS-NAME,TslGame.exe,✅节点选择
+  - PROCESS-NAME,TslGame_BE.exe,✅节点选择
+  - GEOSITE,pubg,✅节点选择
+  - GEOSITE,steam,✅节点选择
+  - GEOSITE,epicgames,✅节点选择
+  - GEOSITE,ea,✅节点选择
+
+  # 5. 人工智能
+  - GEOSITE,openai,🤖AI
+  - GEOSITE,anthropic,🤖AI
+  - GEOSITE,github-copilot,🤖AI
+  - GEOSITE,google-gemini,🤖AI
+  - DOMAIN-SUFFIX,gemini.gstatic.com,🤖AI
+  - DOMAIN-SUFFIX,gemini.google.com,🤖AI
+
+  # 6. 社交媒体
+  - GEOSITE,tiktok,✅节点选择
+  - GEOSITE,facebook,✅节点选择
+  - GEOSITE,instagram,✅节点选择
+  - GEOSITE,twitter,✅节点选择
+  - GEOSITE,telegram,✅节点选择
+  - GEOSITE,whatsapp,✅节点选择
+  - GEOSITE,discord,✅节点选择
+
+  # 7. 国际大厂大类
+  - GEOSITE,apple,🍎苹果
+  - GEOSITE,microsoft,Ⓜ️微软服务
+  - GEOSITE,google,✅节点选择
+
+  # 8. 影视特化
+  - GEOSITE,netflix,✅节点选择
+  - GEOSITE,disney,✅节点选择
+  - DOMAIN-SUFFIX,yfsp.tv,✅节点选择
+  - DOMAIN-SUFFIX,jable.tv,✅节点选择
+  - DOMAIN-SUFFIX,ziziys.net,✅节点选择
+  - DOMAIN-SUFFIX,dmmiku.net,✅节点选择
+  - DOMAIN-SUFFIX,5dm.link,✅节点选择
+  - DOMAIN-SUFFIX,agedm.io,✅节点选择
+
+  # 9. 直连兜底
+  - GEOSITE,cn,🔗直连
+  - GEOIP,private,🔗直连
+  - GEOIP,CN,🔗直连
+
+  # 10. 漏网之鱼
+  - MATCH,中转
