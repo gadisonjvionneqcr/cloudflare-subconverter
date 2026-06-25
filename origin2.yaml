@@ -1,3 +1,5 @@
+mode: rule # 💡 我把这里的 direct 改成了 rule（规则模式），这样才能实现国内直连、国外走节点。
+
 port: 7890
 socks-port: 7891
 mixed-port: 7892
