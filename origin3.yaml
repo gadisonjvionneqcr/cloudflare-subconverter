@@ -59,13 +59,10 @@ dns:
     - localhost.ptlogin2.qq.com
     - geoip:private
     - geoip:cn
-    # 新增：游戏及国内高频服务 bypass fake-ip 防止网络严格或报错
     - +.steamcommunity.com
     - +.steampowered.com
     - +.epicgames.com
     - +.ea.com
-    - +.tmall.com
-    - +.taobao.com
 
 tun:
   enable: true
@@ -79,8 +76,108 @@ tun:
   mtu: 1500
   endpoint-independent-nat: true
 
-proxies:  # 这里的节点在实际使用或订阅转换时会被覆盖
-  - name: "⚠️占位节点"
+# 独立规则集 (Rule Providers) - 每天自动异步更新，保持最新去广告和分流规则
+rule-providers:
+  reject:
+    type: http
+    behavior: domain
+    url: "https://cdn.jsdelivr.net/gh/Loyalsoldier/clash-rules@release/reject.txt"
+    path: ./ruleset/reject.yaml
+    interval: 86400
+
+  icloud:
+    type: http
+    behavior: domain
+    url: "https://cdn.jsdelivr.net/gh/Loyalsoldier/clash-rules@release/icloud.txt"
+    path: ./ruleset/icloud.yaml
+    interval: 86400
+
+  apple:
+    type: http
+    behavior: domain
+    url: "https://cdn.jsdelivr.net/gh/Loyalsoldier/clash-rules@release/apple.txt"
+    path: ./ruleset/apple.yaml
+    interval: 86400
+
+  google:
+    type: http
+    behavior: domain
+    url: "https://cdn.jsdelivr.net/gh/Loyalsoldier/clash-rules@release/google.txt"
+    path: ./ruleset/google.yaml
+    interval: 86400
+
+  proxy:
+    type: http
+    behavior: domain
+    url: "https://cdn.jsdelivr.net/gh/Loyalsoldier/clash-rules@release/proxy.txt"
+    path: ./ruleset/proxy.yaml
+    interval: 86400
+
+  direct:
+    type: http
+    behavior: domain
+    url: "https://cdn.jsdelivr.net/gh/Loyalsoldier/clash-rules@release/direct.txt"
+    path: ./ruleset/direct.yaml
+    interval: 86400
+
+  private:
+    type: http
+    behavior: domain
+    url: "https://cdn.jsdelivr.net/gh/Loyalsoldier/clash-rules@release/private.txt"
+    path: ./ruleset/private.yaml
+    interval: 86400
+
+  gfw:
+    type: http
+    behavior: domain
+    url: "https://cdn.jsdelivr.net/gh/Loyalsoldier/clash-rules@release/gfw.txt"
+    path: ./ruleset/gfw.yaml
+    interval: 86400
+
+  greatfire:
+    type: http
+    behavior: domain
+    url: "https://cdn.jsdelivr.net/gh/Loyalsoldier/clash-rules@release/greatfire.txt"
+    path: ./ruleset/greatfire.yaml
+    interval: 86400
+
+  tld-not-cn:
+    type: http
+    behavior: domain
+    url: "https://cdn.jsdelivr.net/gh/Loyalsoldier/clash-rules@release/tld-not-cn.txt"
+    path: ./ruleset/tld-not-cn.yaml
+    interval: 86400
+
+  telegramcidr:
+    type: http
+    behavior: ipcidr
+    url: "https://cdn.jsdelivr.net/gh/Loyalsoldier/clash-rules@release/telegramcidr.txt"
+    path: ./ruleset/telegramcidr.yaml
+    interval: 86400
+
+  cncidr:
+    type: http
+    behavior: ipcidr
+    url: "https://cdn.jsdelivr.net/gh/Loyalsoldier/clash-rules@release/cncidr.txt"
+    path: ./ruleset/cncidr.yaml
+    interval: 86400
+
+  lancidr:
+    type: http
+    behavior: ipcidr
+    url: "https://cdn.jsdelivr.net/gh/Loyalsoldier/clash-rules@release/lancidr.txt"
+    path: ./ruleset/lancidr.yaml
+    interval: 86400
+
+  applications:
+    type: http
+    behavior: domain
+    url: "https://cdn.jsdelivr.net/gh/Loyalsoldier/clash-rules@release/applications.txt"
+    path: ./ruleset/applications.yaml
+    interval: 86400
+
+proxies:  # 实际使用时会被订阅转换工具替换
+  - name: "⚠️订阅节点占位"
     type: "ss"
     server: "example.com"
     port: 443
@@ -134,7 +231,7 @@ proxy-groups:
     interval: 300
     tolerance: 50
     proxies:
-      - ⚠️占位节点 # 转换工具会自动将你的机场节点注入到这里
+      - ⚠️订阅节点占位 # 订阅转换后，这里会自动塞满机场节点
 
   - name: 🔗直连
     type: select
@@ -148,11 +245,10 @@ proxy-groups:
       - REJECT
       - DIRECT
 
-  - name: 🐟漏网之鱼
+  - name: 中转
     type: select
     proxies:
       - ✅节点选择
-      - ♻️自动切换
       - 🔗直连
 
 geox-url:
@@ -161,21 +257,21 @@ geox-url:
   mmdb: https://testingcf.jsdelivr.net/gh/MetaCubeX/meta-rules-dat@release/country.mmdb
 geodata-mode: true
 
-ules:
-  # ======== 1. 本地与局域网直连 (Bypass LAN) ========
+rules:
+  # ======== 1. 极致广告拦截与隐私保护 (最优先匹配) ========
+  - RULE-SET,reject,⛔广告拦截
+  - GEOSITE,category-ads-all,⛔广告拦截
+
+  # ======== 2. 本地与局域网直连 (Bypass LAN) ========
+  - RULE-SET,applications,🔗直连
+  - RULE-SET,private,🔗直连
+  - RULE-SET,lancidr,🔗直连
   - DOMAIN-SUFFIX,local,🔗直连
   - DOMAIN-SUFFIX,localhost,🔗直连
+  - IP-CIDR,192.168.0.0/16,🔗直连
   - IP-CIDR,10.0.0.0/8,🔗直连
   - IP-CIDR,127.0.0.0/8,🔗直连
-  - IP-CIDR,172.16.0.0/12,🔗直连
-  - IP-CIDR,192.168.0.0/16,🔗直连
   - IP-CIDR,100.64.0.0/10,🔗直连
-
-  # ======== 2. 广告拦截与隐私保护 (Enhanced Anti-Ads) ========
-  # 包含各类恶意软件、反欺诈跟踪、精细化手机App启动广告拦截
-  - GEOSITE,category-ads-all,⛔广告拦截
-  - GEOSITE,ban,⛔广告拦截
-  - GEOSITE,privacy,⛔广告拦截
 
   # ======== 3. 人工智能特化 (AI Services) ========
   - GEOSITE,openai,🤖AI
@@ -184,9 +280,6 @@ ules:
   - GEOSITE,google-gemini,🤖AI
   - DOMAIN-SUFFIX,gemini.gstatic.com,🤖AI
   - DOMAIN-SUFFIX,gemini.google.com,🤖AI
-  - DOMAIN-KEYWORD,openai,🤖AI
-  - DOMAIN-KEYWORD,anthropic,🤖AI
-  - DOMAIN-KEYWORD,claude,🤖AI
 
   # ======== 4. 音乐与滚动歌词 (Music & Lyrics) ========
   - GEOSITE,spotify,🎧Spotify
@@ -194,18 +287,15 @@ ules:
   - DOMAIN-SUFFIX,lyricify.com,🎧Spotify
   - DOMAIN-SUFFIX,lyricify.top,🎧Spotify
 
-  # ======== 5. 游戏特化 (Gaming Bypass & Proxies) ========
+  # ======== 5. 游戏特化 (Gaming) ========
   - PROCESS-NAME,TslGame.exe,✅节点选择
   - PROCESS-NAME,TslGame_BE.exe,✅节点选择
   - GEOSITE,pubg,✅节点选择
   - GEOSITE,steam,✅节点选择
   - GEOSITE,epicgames,✅节点选择
   - GEOSITE,ea,✅节点选择
-  - GEOSITE,nintendo,✅节点选择
-  - GEOSITE,playstation,✅节点选择
-  - GEOSITE,xbox,✅节点选择
 
-  # ======== 6. 社交媒体与常用海外App (Social Media) ========
+  # ======== 6. 社交媒体 (Social Media) ========
   - GEOSITE,tiktok,✅节点选择
   - GEOSITE,facebook,✅节点选择
   - GEOSITE,instagram,✅节点选择
@@ -213,17 +303,17 @@ ules:
   - GEOSITE,telegram,✅节点选择
   - GEOSITE,whatsapp,✅节点选择
   - GEOSITE,discord,✅节点选择
-  - GEOSITE,youtube,✅节点选择
+  - RULE-SET,telegramcidr,✅节点选择
 
-  # ======== 7. 国际大厂特化 (Big Tech) ========
-  - GEOSITE,apple,🍎苹果
+  # ======== 7. 国际大厂特化 (Big Tech Providers) ========
+  - RULE-SET,icloud,🍎苹果 # 优先处理iCloud，防止同步卡顿
+  - RULE-SET,apple,🍎苹果
+  - RULE-SET,google,✅节点选择
   - GEOSITE,microsoft,Ⓜ️微软服务
-  - GEOSITE,google,✅节点选择
 
-  # ======== 8. 影视特化 (Streaming Services) ========
+  # ======== 8. 影视与特定小众网站 (Streaming & Custom Suffix) ========
   - GEOSITE,netflix,✅节点选择
   - GEOSITE,disney,✅节点选择
-  - GEOSITE,bilibili,🔗直连 # 确保国内B站走直连
   - DOMAIN-SUFFIX,yfsp.tv,✅节点选择
   - DOMAIN-SUFFIX,jable.tv,✅节点选择
   - DOMAIN-SUFFIX,ziziys.net,✅节点选择
@@ -231,15 +321,18 @@ ules:
   - DOMAIN-SUFFIX,5dm.link,✅节点选择
   - DOMAIN-SUFFIX,agedm.io,✅节点选择
 
-  # ======== 9. 漏网国外流量 (Bypass Global) ========
-  # 优先匹配特定的海外非大陆网站名单，防止部分未归类网站误走直连
-  - GEOSITE,geolocation-!cn,✅节点选择
+  # ======== 9. 精细化规则集分流 (Advanced Rule-Sets) ========
+  - RULE-SET,proxy,✅节点选择
+  - RULE-SET,gfw,✅节点选择
+  - RULE-SET,greatfire,✅节点选择
+  - RULE-SET,tld-not-cn,✅节点选择
+  - RULE-SET,direct,🔗直连
 
-  # ======== 10. 国内直连兜底 (China Local Bypass) ========
-  # 所有国内域名、国内私有IP段、中国大陆IP全部分流至直连
+  # ======== 10. 国内大类直连兜底 (China Local Bypass) ========
   - GEOSITE,cn,🔗直连
   - GEOIP,private,🔗直连
   - GEOIP,CN,🔗直连
+  - RULE-SET,cncidr,🔗直连
 
-  # ======== 11. 终极漏网之鱼 (Final Match) ========
-  - MATCH,🐟漏网之鱼
+  # ======== 11. 最终漏网之鱼 (Final Match) ========
+  - MATCH,✅节点选择
