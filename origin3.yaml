@@ -161,43 +161,51 @@ geox-url:
   mmdb: https://testingcf.jsdelivr.net/gh/MetaCubeX/meta-rules-dat@release/country.mmdb
 geodata-mode: true
 
-rules:
-  # 1. 本地与局域网直连
+ules:
+  # ======== 1. 本地与局域网直连 (Bypass LAN) ========
   - DOMAIN-SUFFIX,local,🔗直连
   - DOMAIN-SUFFIX,localhost,🔗直连
-  - IP-CIDR,192.168.0.0/16,🔗直连
   - IP-CIDR,10.0.0.0/8,🔗直连
   - IP-CIDR,127.0.0.0/8,🔗直连
+  - IP-CIDR,172.16.0.0/12,🔗直连
+  - IP-CIDR,192.168.0.0/16,🔗直连
   - IP-CIDR,100.64.0.0/10,🔗直连
 
-  # 2. 广告拦截（增强版：多规则合并拒绝，屏蔽主流国内APP启动广告与反欺诈跟踪）
+  # ======== 2. 广告拦截与隐私保护 (Enhanced Anti-Ads) ========
+  # 包含各类恶意软件、反欺诈跟踪、精细化手机App启动广告拦截
   - GEOSITE,category-ads-all,⛔广告拦截
   - GEOSITE,ban,⛔广告拦截
   - GEOSITE,privacy,⛔广告拦截
 
-  # 3. 音乐与滚动歌词
-  - GEOSITE,spotify,🎧Spotify
-  - DOMAIN-KEYWORD,lyricify,🎧Spotify
-  - DOMAIN-SUFFIX,lyricify.com,🎧Spotify
-  - DOMAIN-SUFFIX,lyricify.top,🎧Spotify
-
-  # 4. 游戏特化
-  - PROCESS-NAME,TslGame.exe,✅节点选择
-  - PROCESS-NAME,TslGame_BE.exe,✅节点选择
-  - GEOSITE,pubg,✅节点选择
-  - GEOSITE,steam,✅节点选择
-  - GEOSITE,epicgames,✅节点选择
-  - GEOSITE,ea,✅节点选择
-
-  # 5. 人工智能（精细化防流失）
+  # ======== 3. 人工智能特化 (AI Services) ========
   - GEOSITE,openai,🤖AI
   - GEOSITE,anthropic,🤖AI
   - GEOSITE,github-copilot,🤖AI
   - GEOSITE,google-gemini,🤖AI
   - DOMAIN-SUFFIX,gemini.gstatic.com,🤖AI
   - DOMAIN-SUFFIX,gemini.google.com,🤖AI
+  - DOMAIN-KEYWORD,openai,🤖AI
+  - DOMAIN-KEYWORD,anthropic,🤖AI
+  - DOMAIN-KEYWORD,claude,🤖AI
 
-  # 6. 社交媒体
+  # ======== 4. 音乐与滚动歌词 (Music & Lyrics) ========
+  - GEOSITE,spotify,🎧Spotify
+  - DOMAIN-KEYWORD,lyricify,🎧Spotify
+  - DOMAIN-SUFFIX,lyricify.com,🎧Spotify
+  - DOMAIN-SUFFIX,lyricify.top,🎧Spotify
+
+  # ======== 5. 游戏特化 (Gaming Bypass & Proxies) ========
+  - PROCESS-NAME,TslGame.exe,✅节点选择
+  - PROCESS-NAME,TslGame_BE.exe,✅节点选择
+  - GEOSITE,pubg,✅节点选择
+  - GEOSITE,steam,✅节点选择
+  - GEOSITE,epicgames,✅节点选择
+  - GEOSITE,ea,✅节点选择
+  - GEOSITE,nintendo,✅节点选择
+  - GEOSITE,playstation,✅节点选择
+  - GEOSITE,xbox,✅节点选择
+
+  # ======== 6. 社交媒体与常用海外App (Social Media) ========
   - GEOSITE,tiktok,✅节点选择
   - GEOSITE,facebook,✅节点选择
   - GEOSITE,instagram,✅节点选择
@@ -205,15 +213,17 @@ rules:
   - GEOSITE,telegram,✅节点选择
   - GEOSITE,whatsapp,✅节点选择
   - GEOSITE,discord,✅节点选择
+  - GEOSITE,youtube,✅节点选择
 
-  # 7. 国际大厂大类
+  # ======== 7. 国际大厂特化 (Big Tech) ========
   - GEOSITE,apple,🍎苹果
   - GEOSITE,microsoft,Ⓜ️微软服务
   - GEOSITE,google,✅节点选择
 
-  # 8. 影视特化
+  # ======== 8. 影视特化 (Streaming Services) ========
   - GEOSITE,netflix,✅节点选择
   - GEOSITE,disney,✅节点选择
+  - GEOSITE,bilibili,🔗直连 # 确保国内B站走直连
   - DOMAIN-SUFFIX,yfsp.tv,✅节点选择
   - DOMAIN-SUFFIX,jable.tv,✅节点选择
   - DOMAIN-SUFFIX,ziziys.net,✅节点选择
@@ -221,10 +231,15 @@ rules:
   - DOMAIN-SUFFIX,5dm.link,✅节点选择
   - DOMAIN-SUFFIX,agedm.io,✅节点选择
 
-  # 9. 直连兜底
+  # ======== 9. 漏网国外流量 (Bypass Global) ========
+  # 优先匹配特定的海外非大陆网站名单，防止部分未归类网站误走直连
+  - GEOSITE,geolocation-!cn,✅节点选择
+
+  # ======== 10. 国内直连兜底 (China Local Bypass) ========
+  # 所有国内域名、国内私有IP段、中国大陆IP全部分流至直连
   - GEOSITE,cn,🔗直连
   - GEOIP,private,🔗直连
   - GEOIP,CN,🔗直连
 
-  # 10. 漏网之鱼
+  # ======== 11. 终极漏网之鱼 (Final Match) ========
   - MATCH,🐟漏网之鱼
